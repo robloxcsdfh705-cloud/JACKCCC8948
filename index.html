@@ -1,1 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星紫智慧導航系統</title>
+    <script src="https://jsdelivr.net"></script>
+    <script type="module">
+        import * as webllm from "https://esm.run";
+        window.webllm = webllm;
+    </script>
+</head>
+<body class="bg-purple-50 h-screen flex flex-col justify-between font-sans">
+
+    <!-- 1. 身分驗證登入遮罩畫面 -->
+    <div id="login-overlay" class="fixed inset-0 bg-purple-950 flex flex-col items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border-t-4 border-purple-600">
+            <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🔮</div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">身分驗證登入</h2>
+            <p class="text-gray-500 mb-6 text-sm">歡迎造訪星紫系統，請先完成密碼驗證以解鎖瀏覽器 AI 運算引擎。</p>
+            <button onclick="startVerification()" class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-purple-700 transition cursor-pointer">
+                開始身分驗證登入
+            </button>
+            <p id="login-error" class="text-red-500 text-sm mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <!-- 2. 主畫面頂部 -->
+    <div class="bg-purple-700 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div>
+            <h1 class="text-lg font-bold">🔮 星紫智慧導航系統</h1>
+            <p id="status" class="text-xs text-purple-200">正在等待驗證...</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <label for="model-select" class="text-xs font-semibold text-purple-100">切換AI模式：</label>
+            <select id="model-select" disabled onchange="switchModel()" class="bg-purple-800 text-white text-sm rounded-lg p-2 focus:outline-none border border-purple-500">
+                <!-- 💡 這裡將預設第一個模型換成 Qwen2-0.5B，體積超小，絕對跳得出來 -->
+                <option value="Qwen2-0.5B-Instruct-q4f16_1-MLC">⚡ 極速輕量模式 (秒開首選)</option>
+                <option value="Phi-3-mini-4k-instruct-q4f16_1-MLC">💬 標準全能模式 (Phi-3)</option>
+                <option value="Gemma-2-2b-it-q4f16_1-MLC">✍️ 創意寫作模式 (Gemma-2)</option>
+            </select>
+            <button onclick="lockSystem()" class="bg-purple-900 hover:bg-purple-950 text-xs px-3 py-2 rounded-lg transition cursor-pointer ml-2">安全鎖定</button>
+        </div>
+    </div>
+
+    <!-- 聊天對話區域 -->
+    <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 max-w-3xl w-full mx-auto">
+        <div class="flex items-start">
+            <div id="welcome-msg" class="bg-white p-3 rounded-lg shadow-sm max-w-[80%] text-gray-800 text-sm leading-relaxed border-l-4 border-purple-500">
+                🎉 身分驗證成功！歡迎來到 <b>星紫智慧導航系統</b>。<br>
+                系統正在為您啟動本機免金鑰微型 AI 核心，請觀察上方狀態列提示。
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部輸入區域 -->
+    <div class="bg-white border-t border-purple-100 p-4 shadow-lg">
+        <div class="max-w-3xl mx-auto flex gap-2">
+            <input type="text" id="user-input" disabled
+                   class="flex-1 border border-purple-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-purple-50" 
+                   placeholder="請先等待 AI 模式初始化...">
+            <button id="send-btn" disabled onclick="sendMessage()" 
+                    class="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition disabled:bg-purple-300 cursor-pointer">
+                傳送
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        const CORRECT_PASSWORD = "admin"; // 預設密碼依舊是 admin
+        let engine = null;
+
+        window.startVerification = function() {
+            const password = prompt("請輸入您的管理員存取密碼：");
+            const errorLabel = document.getElementById("login-error");
+
+            if (password === CORRECT_PASSWORD) {
+                document.getElementById("login-overlay").classList.add("hidden");
+                errorLabel.classList.add("hidden");
+                document.getElementById("model-select").disabled = false;
+                switchModel();
+            } else if (password !== null) {
+                errorLabel.innerText = "❌ 密碼錯誤！拒絕存取本系統。";
+                errorLabel.classList.remove("hidden");
+            }
+        }
+
+        window.lockSystem = function() { location.reload(); }
+
+        window.switchModel = async function() {
+            const modelSelect = document.getElementById("model-select");
+            const statusLabel = document.getElementById("status");
+            const userInput = document.getElementById("user-input");
+            const sendBtn = document.getElementById("send-btn");
+            
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            modelSelect.disabled = true;
+            
+            const targetModel = modelSelect.value;
+            appendSystemMessage(`🔮 系統正在調配新模式核心，請稍微靜候...`);
+
+            try {
+                if (!engine) {
+                    engine = await window.webllm.CreateEngineLoopback();
+                }
+                
+                engine.setInitProgressCallback((report) => {
+                    statusLabel.innerText = report.text.replace("Fetching", "核心下載中").replace("Loading", "核心載入中");
+                    statusLabel.className = "text-xs text-yellow-300 animate-pulse";
+                });
+
+                await engine.reload(targetModel);
+                
+                statusLabel.innerText = "● 星紫系統已就緒";
+                statusLabel.className = "text-xs text-green-400 font-bold";
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                modelSelect.disabled = false;
+                userInput.placeholder = "請輸入訊息...";
+                appendSystemMessage(`🔮 星紫系統已成功切換模式，隨時可以對話。`);
+            } catch (error) {
+                statusLabel.innerText = "⚠️ 載入失敗，您的瀏覽器不支援 WebGPU";
+                statusLabel.className = "text-xs text-red-300 font-bold";
+                modelSelect.disabled = false;
+                alert("啟動失敗：請確認是否使用 Chrome/Edge 瀏覽器並開啟硬體加速。");
+            }
+        }
+
+        window.sendMessage = async function() {
+            const userInput = document.getElementById("user-input");
+            const chatBox = document.getElementById("chat-box");
+            const text = userInput.value.trim();
+            if (!text || !engine) return;
+
+            appendMessage(text, 'user');
+            userInput.value = "";
+
+            const aiBubble = appendMessage("星紫助理思考中...", 'ai');
+
+            try {
+                const messages = [
+                    { role: "system", content: "你是一個實用的AI助理，名為星紫智慧導航系統，請一律使用繁體中文(台灣)進行親切專業的回覆。" },
+                    { role: "user", content: text }
+                ];
+                
+                const reply = await engine.chat.completions.create({ messages });
+                aiBubble.innerText = reply.choices.message.content;
+            } catch (error) {
+                aiBubble.innerText = "系統生成錯誤：" + error.message;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendSystemMessage(text) {
+            const chatBox = document.getElementById("chat-box");
+            const msg = document.createElement("div");
+            msg.className = "text-center text-xs text-purple-400 my-2 italic";
+            msg.innerText = text;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function appendMessage(text, sender) {
+            const chatBox = document.getElementById("chat-box");
+            const wrapper = document.createElement("div");
+            wrapper.className = sender === 'user' ? "flex items-start justify-end" : "flex items-start";
+            
+            const bubble = document.createElement("div");
+            bubble.className = sender === 'user' 
+                ? "bg-purple-600 text-white p-3 rounded-lg shadow-sm max-w-[80%] text-sm" 
+                : "bg-white text-gray-800 p-3 rounded-lg shadow-sm max-w-[80%] text-sm leading-relaxed border border-purple-100";
+            bubble.innerText = text;
+
+            wrapper.appendChild(bubble);
+            chatBox.appendChild(wrapper);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return bubble;
+        }
+    </script>
+</body>
+</html>
 
