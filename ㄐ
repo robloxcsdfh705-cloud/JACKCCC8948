@@ -1,1 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星紫智慧導航系統</title>
+    <!-- 使用完全不被擋、最輕量的微軟官方樣式庫 (確保100%跳出排版) -->
+    <link rel="stylesheet" href="https://aspnetcdn.com">
+    <style>
+        body { background-color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; }
+        .purple-header { background-color: #7e22ce; color: white; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .chat-container { max-w: 768px; margin: 20px auto; padding: 15px; height: calc(100vh - 180px); overflow-y: auto; padding-bottom: 80px; }
+        .bubble { padding: 12px 16px; margin-bottom: 15px; max-width: 80%; font-size: 14px; line-height: 1.5; }
+        .user-bubble { background-color: #7e22ce; color: white; margin-left: auto; border-radius: 16px 16px 0px 16px; }
+        .ai-bubble { background-color: white; color: #1f2937; border-left: 4px solid #a855f7; border-radius: 16px 16px 16px 0px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .input-area { background-color: white; border-top: 1px solid #e9d5ff; padding: 15px; position: fixed; bottom: 0; left: 0; right: 0; }
+        .purple-btn { background-color: #7e22ce; color: white; font-weight: bold; border: none; padding: 0px 25px; border-radius: 8px; cursor: pointer; }
+        .purple-btn:hover { background-color: #6b21a8; color: white; }
+        .input-box { border: 1px solid #d8b4fe; border-radius: 8px; padding: 10px 15px; }
+        
+        /* Google 登入遮罩畫面樣式 */
+        #login-overlay { position: fixed; inset: 0; background: rgba(30, 27, 75, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .login-card { background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; width: 90%; border-top: 5px solid #7e22ce; box-shadow: 0 20px 25px rgba(0,0,0,0.1); color: #1f2937; }
+        .google-login-btn { width: 100%; display: flex; items-center: center; justify-content: center; gap: 10px; background: white; border: 1px solid #d1d5db; color: #374151; font-weight: bold; padding: 12px 0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; transition: 0.2s; }
+        .google-login-btn:hover { background: #f9fafb; text-decoration: none; color: #374151; }
+    </style>
+
+    <!-- 💡 核心引入：載入 Google 官方 Firebase SDK 模組 (不影響排版，安全穩定) -->
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
+        
+        window.firebaseAuth = { initializeApp, getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged };
+    </script>
+</head>
+<body>
+
+    <!-- 🔒 1. Google 帳號綁定驗證遮罩 -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div style="font-size: 50px; margin-bottom: 10px;">🔮</div>
+            <h2 class="font-weight-bold mb-2">星紫系統身分驗證</h2>
+            <p class="text-muted small mb-4">歡迎造訪，本系統受安全保護，請綁定並使用您的 Google 帳號登入。</p>
+            
+            <!-- Google 登入按鈕 -->
+            <button onclick="loginWithGoogle()" class="google-login-btn">
+                <img src="https://gstatic.com" style="width: 20px; height: 20px;" alt="Google">
+                使用 Google 帳號登入
+            </button>
+            <p id="login-error" class="text-danger small mt-3" style="display: none;"></p>
+        </div>
+    </div>
+
+    <!-- 2. 主畫面頂部 -->
+    <div class="purple-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h5 mb-0 font-weight-bold">🔮 星紫智慧導航系統</h1>
+            <small id="user-info" style="color: #e9d5ff;">正在驗證 Google 帳號狀態...</small>
+        </div>
+        <button onclick="logout()" class="btn btn-sm btn-dark" style="background-color: #4c1d95; border: none;">登出帳號</button>
+    </div>
+
+    <!-- 聊天對話區 -->
+    <div class="chat-container" id="chat-box">
+        <div class="d-flex">
+            <div class="bubble ai-bubble">
+                🎉 Google 身分驗證綁定成功！歡迎造訪 <b>星紫智慧導航系統</b>！<br>
+                請直接在下方輸入框打字，即可測試自動回覆！
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部輸入區 -->
+    <div class="input-area">
+        <div class="container" style="max-width: 768px;">
+            <div class="input-group">
+                <input type="text" id="user-input" class="form-control input-box" placeholder="請輸入訊息..." onkeypress="handleKeyPress(event)">
+                <div class="input-group-append">
+                    <button class="btn purple-btn" onclick="sendMessage()">傳送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ====================================================================
+        // 🛠️ 【必要設定區】請在這裡貼上您的 Google Firebase 設定資訊
+        // ====================================================================
+        const ADMIN_EMAIL = "您本人的Google信箱@gmail.com"; // 💡 只有綁定這個信箱登入的人才能進去
+        
+        // 請去 Firebase 網站建立免費專案，並把 Web 應用的 Config 大括號貼在下面：
+        const firebaseConfig = {
+            apiKey: "您的Firebase_API_Key",
+            authDomain: "://firebaseapp.com",
+            projectId: "您的專案ID",
+            storageBucket: "://appspot.com",
+            messagingSenderId: "您的發送者ID",
+            appId: "您的應用程式ID"
+        };
+        // ====================================================================
+
+        // 初始化安全連線
+        const app = window.firebaseAuth.initializeApp(firebaseConfig);
+        const auth = window.firebaseAuth.getAuth(app);
+        const provider = new window.firebaseAuth.GoogleAuthProvider();
+
+        // 監聽並驗證 Google 登入狀態
+        window.firebaseAuth.onAuthStateChanged(auth, (user) => {
+            const overlay = document.getElementById("login-overlay");
+            const errorLabel = document.getElementById("login-error");
+            
+            if (user) {
+                // 安全防護：比對登入的 Gmail 是不是您在上面設定的本人信箱
+                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    overlay.style.display = "none"; // 通過驗證，隱藏鎖定畫面
+                    document.getElementById("user-info").innerText = "● 管理員已登入: " + user.email;
+                } else {
+                    // 如果是其他不相干的人登入 Google，會被無情拒絕，保護金鑰不被偷
+                    errorLabel.innerText = "❌ 存取拒絕：此帳號 (" + user.email + ") 沒有管理員權限。";
+                    errorLabel.style.display = "block";
+                    window.firebaseAuth.signOut(auth);
+                }
+            } else {
+                overlay.style.display = "flex"; // 未登入狀態下，強制上鎖顯示 Google 登入按鈕
+                document.getElementById("user-info").innerText = "未登入帳號";
+            }
+        });
+
+        // 彈出 Google 登入視窗
+        window.loginWithGoogle = async function() {
+            try {
+                await window.firebaseAuth.signInWithPopup(auth, provider);
+            } catch (error) {
+                document.getElementById("login-error").innerText = "登入失敗：" + error.message;
+                document.getElementById("login-error").style.display = "block";
+            }
+        }
+
+        // 登出系統
+        window.logout = function() { window.firebaseAuth.signOut(auth); }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') { sendMessage(); } }
+
+        // 純本地模擬 AI 自動回覆 (保證100%不因伺服器問題卡死報錯)
+        window.sendMessage = function() {
+            const userInput = document.getElementById("user-input");
+            const chatBox = document.getElementById("chat-box");
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            userInput.value = "";
+
+            const aiBubble = appendMessage("星紫助理思考中...", 'ai');
+
+            setTimeout(() => {
+                let reply = "收到您的訊息！星紫導航系統目前在安全鎖定保護下運作一切正常。";
+                if (text.includes("你好") || text.includes("哈囉")) {
+                    reply = "您好！歡迎使用綁定了 Google 安全驗證的星紫智慧系統。✨";
+                } else if (text.includes("功能")) {
+                    reply = "我目前支援 Google 帳號綁定驗證、純紫色介面以及流暢的本地繁體中文自動回覆。";
+                }
+                aiBubble.innerHTML = reply;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 500);
+        }
+
+        function appendMessage(text, sender) {
+            const chatBox = document.getElementById("chat-box");
+            const row = document.createElement("div");
+            row.className = sender === 'user' ? "d-flex justify-content-end" : "d-flex";
+            const bubble = document.createElement("div");
+            bubble.className = sender === 'user' ? "bubble user-bubble" : "bubble ai-bubble";
+            bubble.innerHTML = text;
+            row.appendChild(bubble);
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return bubble;
+        }
+    </script>
+</body>
+</html>
 
