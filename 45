@@ -1,1 +1,58 @@
+<!-- ==================================================================== -->
+<!-- 🎨 融合模組第一部分：網頁圖片外觀樣式（請貼在 <style> 與 </style> 之間） -->
+<!-- ==================================================================== -->
+<style>
+    .ai-img { 
+        max-width: 100%; 
+        border-radius: 10px; 
+        margin-top: 10px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    }
+</style>
+
+
+<!-- ==================================================================== -->
+<!-- 🎨 融合模組第二部分：介面畫圖按鈕（請貼在對話傳送按鈕的「前面」） -->
+<!-- ==================================================================== -->
+<button onclick="sendImageRequest()" style="background-color: #a855f7; color: white; font-weight: bold; border: none; padding: 0px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-right: 5px; transition: 0.2s;">
+    🎨 畫圖
+</button>
+
+
+<!-- ==================================================================== -->
+<!-- 🎨 融合模組第三部分：核心繪圖邏輯（請貼在 <script> 與 </script> 之間） -->
+<!-- ==================================================================== -->
+<script>
+    function sendImageRequest() {
+        const userInput = document.getElementById("user-input");
+        const chatBox = document.getElementById("chat-box");
+        const text = userInput.value.trim();
+        
+        // 如果輸入框空空的，什麼都不做
+        if (!text) return;
+
+        // 1. 在網頁上留下你下的繪圖指令紀錄
+        appendMessage("🔮 請幫我生成一張圖片描述為：" + text, 'user', true);
+        userInput.value = ""; // 清空輸入框
+
+        // 2. 建立一個 AI 的對話泡泡，提示正在畫圖中
+        const aiBubble = appendMessage("星紫助理正在為您召喚雲端魔法，正在調色繪圖中...", 'ai', false);
+
+        // 3. 呼叫免金鑰開源公共繪圖通道 (設定為標準 512x512 正方形)
+        setTimeout(() => {
+            const encodedText = encodeURIComponent(text);
+            const imageUrl = "https://pollinations.ai" + encodedText + "?width=512&height=512&nologo=true&enhance=true";
+            
+            // 將 AI 畫好的圖片網址直接塞進剛才的對話泡泡裡
+            aiBubble.innerHTML = `🔮 <b>星紫系統 AI 圖畫作品完成：</b><br><img src="${imageUrl}" class="ai-img" alt="AI生成圖片" onload="document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;">`;
+            
+            // 自動同步存入你的本機歷史紀錄，關掉網頁圖也不會不見
+            if (typeof saveChatHistory === "function") {
+                saveChatHistory();
+            } else {
+                localStorage.setItem("星紫系統_對話紀錄", chatBox.innerHTML);
+            }
+        }, 500);
+    }
+</script>
 
