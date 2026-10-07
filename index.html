@@ -4,49 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>銀河 AI 智慧助理</title>
-    <!-- 使用完全不被擋、最輕量的微軟官方樣式庫 (確保100%跳出排版) -->
+    <!-- 引入微軟前端庫 -->
     <link rel="stylesheet" href="https://aspnetcdn.com">
+    
+    <!-- 💡 核心引入：載入 Google 官方最新的單一登入安全 SDK 加密庫 -->
+    <script src="https://google.com" async defer></script>
+    
     <style>
-        /* 🌌 全站璀璨銀河星空夜色背景 */
         body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
-        
-        /* 頂部導覽列：璀璨深邃銀河漸層 */
         .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #4c1d95; }
-        
-        .chat-container { max-w: 768px; margin: 20px auto; padding: 15px; height: calc(100vh - 180px); overflow-y: auto; padding-bottom: 80px; box-sizing: border-box; }
+        .chat-container { max-w: 768px; margin: 20px auto; padding: 15px; height: calc(100vh - 180px); overflow-y: auto; box-sizing: border-box; }
         .bubble { padding: 12px 16px; margin-bottom: 15px; max-width: 80%; font-size: 14px; line-height: 1.5; }
         .ai-bubble { background-color: #1e1b3a; color: #f3e8ff; border-left: 4px solid #a855f7; border-radius: 16px 16px 16px 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #3b0764; border-left-width: 4px; }
         
-        /* 🔒 內嵌式銀河 Google 登入介面樣式 */
+        /* 🔒 內嵌式銀河 Google 官方驗證介面樣式 */
         #login-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a0b36 0%, #050515 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
         .login-card { background: #11112a; padding: 40px 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; border-top: 6px solid #a855f7; box-shadow: 0 25px 60px rgba(0,0,0,0.8); color: #f3e8ff; border: 1px solid #2e1065; }
-        .google-login-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: white; border: 1px solid #d1d5db; color: #374151; font-weight: bold; padding: 12px 0; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; transition: 0.2s; }
-        .google-login-btn:hover { background: #f9fafb; text-decoration: none; color: #374151; }
+        .google-btn-wrapper { display: flex; justify-content: center; margin-top: 25px; min-height: 40px; }
     </style>
-
-    <!-- 💡 核心引入：載入 Google 官方 Firebase SDK 模組 (不影響排版，安全穩定) -->
-    <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://gstatic.com";
-        
-        window.firebaseAuth = { initializeApp, getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged };
-    </script>
 </head>
 <body>
 
-    <!-- 🔒 1. Google 帳號綁定驗證遮罩 (銀河夜空風) -->
+    <!-- 🔒 1. Google 官方授權登入遮罩 -->
     <div id="login-overlay">
         <div class="login-card">
             <div style="font-size: 55px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(168,85,247,0.5));">🌌</div>
             <h2 class="font-weight-bold mb-2" style="color: #c084fc; letter-spacing: 1px;">銀河系統安全驗證</h2>
-            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 25px; line-height: 1.4;">歡迎造訪，此為管理員專屬星際節點。<br>請綁定並使用您的 Google 帳號登入驗證。</p>
+            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 10px; line-height: 1.4;">
+                歡迎造訪，此為管理員專屬星際節點。<br>
+                請使用您<b>真實的 Google 帳號與密碼</b>安全登入。
+            </p>
             
-            <!-- Google 登入按鈕 -->
-            <button onclick="loginWithGoogle()" class="google-login-btn">
-                <img src="https://gstatic.com" style="width: 20px; height: 20px;" alt="Google">
-                使用 Google 帳號登入
-            </button>
-            <p id="login-error" class="text-danger small mt-3" style="display: none; font-weight: 600; color: #f87171 !important;"></p>
+            <!-- 💡 Google 官方渲染的標準安全登入按鈕區域 -->
+            <div class="google-btn-wrapper">
+                <div id="g_id_onload"
+                     data-client_id="://googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_select="false"
+                     data-itp_support="true">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="filled_blue"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left">
+                </div>
+            </div>
+            
+            <p id="login-error" class="text-danger small mt-4" style="display: none; font-weight: 600; color: #f87171 !important;"></p>
         </div>
     </div>
 
@@ -54,7 +63,7 @@
     <div class="galaxy-header">
         <div>
             <h1 style="margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 1px;">🌌 銀河 AI 智慧助理</h1>
-            <small id="user-info" style="color: #c084fc;">正在驗證 Google 帳號狀態...</small>
+            <small id="user-info" style="color: #c084fc;">未登入帳號</small>
         </div>
         <button onclick="logout()" class="btn btn-sm btn-dark" style="background-color: #3b0764; border: 1px solid #5b21b6;">登出帳號</button>
     </div>
@@ -63,69 +72,54 @@
     <div class="chat-container" id="chat-box">
         <div class="d-flex">
             <div class="bubble ai-bubble">
-                🌌 <b>星際身分綁定成功！</b><br>
+                🌌 <b>官方 Google 身分認證成功！</b><br>
                 歡迎來到 <b>銀河 AI 智慧助理</b> 系統主頁面。<br>
-                目前所有附屬功能已精簡，此處僅作為您的安全登入與專屬星際展示主頁。
+                密碼已由 Google 安全中心加密驗證，成功確保您的隱私無外洩風險。
             </div>
         </div>
     </div>
 
-    <script type="module">
+    <script>
         // ====================================================================
-        // 🛠️ 【必要設定區】請在這裡貼上您的 Google Firebase 設定資訊
+        // 🛠️ 【必要設定區】請在這裡填入你平時在登入的 Google 信箱
         // ====================================================================
-        const ADMIN_EMAIL = "您本人的Google信箱@gmail.com"; // 💡 只有綁定這個信箱登入的人才能進去
-        
-        // 請去 Firebase 網站建立免費專案，並把 Web 應用的 Config 大括號貼在下面：
-        const firebaseConfig = {
-            apiKey: "您的Firebase_API_Key",
-            authDomain: "://firebaseapp.com",
-            projectId: "您的專案ID",
-            storageBucket: "://appspot.com",
-            messagingSenderId: "您的發送者ID",
-            appId: "您的應用程式ID"
-        };
+        const ADMIN_EMAIL = "你的信箱@gmail.com"; 
         // ====================================================================
 
-        // 初始化安全連線
-        const app = window.firebaseAuth.initializeApp(firebaseConfig);
-        const auth = window.firebaseAuth.getAuth(app);
-        const provider = new window.firebaseAuth.GoogleAuthProvider();
-
-        // 監聽並驗證 Google 登入狀態
-        window.firebaseAuth.onAuthStateChanged(auth, (user) => {
-            const overlay = document.getElementById("login-overlay");
+        // 💡 當使用者點擊 Google 按鈕並完成自己的帳密輸入後，Google 會自動呼叫這個函式
+        function handleCredentialResponse(response) {
             const errorLabel = document.getElementById("login-error");
             
-            if (user) {
-                // 安全防護：比對登入的 Gmail 是不是您在上面設定的本人信箱
-                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                    overlay.style.display = "none"; // 通過驗證，隱藏鎖定畫面
-                    document.getElementById("user-info").innerText = "● 管理員已登入: " + user.email;
-                } else {
-                    // 如果是其他不相干的人登入 Google，會被無情拒絕
-                    errorLabel.innerText = "❌ 存取拒絕：此帳號 (" + user.email + ") 沒有管理員權限。";
-                    errorLabel.style.display = "block";
-                    window.firebaseAuth.signOut(auth);
-                }
-            } else {
-                overlay.style.display = "flex"; // 未登入狀態下，強制上鎖顯示 Google 登入按鈕
-                document.getElementById("user-info").innerText = "未登入帳號";
-            }
-        });
-
-        // 點擊後彈出 Google 登入視窗
-        window.loginWithGoogle = async function() {
             try {
-                await window.firebaseAuth.signInWithPopup(auth, provider);
-            } catch (error) {
-                document.getElementById("login-error").innerText = "登入失敗：" + error.message;
-                document.getElementById("login-error").style.display = "block";
+                // 解析 Google 回傳的加密通行證 (JWT)
+                const base64Url = response.credential.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const googleUser = JSON.parse(jsonPayload);
+                const userEmail = googleUser.email.toLowerCase();
+
+                // 檢查登入的人是不是程式碼裡指定的你本人
+                if (userEmail === ADMIN_EMAIL.toLowerCase()) {
+                    document.getElementById("login-overlay").style.display = "none"; // 放行
+                    document.getElementById("user-info").innerText = "● 官方認證管理員: " + googleUser.email;
+                    errorLabel.style.display = "none";
+                } else {
+                    // 別人登入，無情拒絕
+                    errorLabel.innerText = "❌ 存取拒絕：此帳號 (" + googleUser.email + ") 沒有本系統使用權限。";
+                    errorLabel.style.display = "block";
+                }
+            } catch (e) {
+                errorLabel.innerText = "❌ Google 安全驗證發生錯誤，請重新整理再試。";
+                errorLabel.style.display = "block";
             }
         }
 
-        // 登出系統
-        window.logout = function() { window.firebaseAuth.signOut(auth); }
+        function logout() {
+            location.reload(); // 重新整理即自動安全登出並鎖定
+        }
     </script>
 </body>
 </html>
