@@ -7,7 +7,7 @@
     <!-- 使用完全不被擋、最輕量的微軟官方樣式庫 (確保100%跳出漂亮排版) -->
     <link rel="stylesheet" href="https://aspnetcdn.com">
     <style>
-        /* 🌌 全站璀璨銀河星空夜色背景 */
+        /* 🌌 全站璀煙銀河星空夜色背景 */
         body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; overflow: hidden; }
         .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; height: 65px; box-sizing: border-box; }
         .main-layout { display: flex; height: calc(100vh - 65px); width: 100vw; }
@@ -24,9 +24,10 @@
         .delete-chat-btn { background: none; border: none; color: #f87171; font-weight: bold; cursor: pointer; padding: 0 5px; font-size: 12px; }
         .delete-chat-btn:hover { color: #ef4444; }
         
-        /* 💡 核心新增：各別聊天室的大腦選擇下拉選單 */
+        /* 💡 核心樣式：切換大腦選單外觀 */
         .model-badge { font-size: 11px; color: #c084fc; background-color: #1e1b4b; padding: 2px 6px; border-radius: 4px; border: 1px solid #4c1d95; width: fit-content; margin-top: 2px; }
-        .model-dropdown { width: 100%; font-size: 12px; background-color: #161638; color: #f3e8ff; border: 1px solid #4c1d95; border-radius: 6px; padding: 5px; outline: none; }
+        .model-dropdown { width: 100%; font-size: 12px; background-color: #161638; color: #f3e8ff; border: 1px solid #4c1d95; border-radius: 6px; padding: 8px; outline: none; }
+        .model-dropdown option { background-color: #161638; color: white; }
 
         /* 右側對話顯示與輸入區配置 */
         .content-area { flex: 1; display: flex; flex-direction: column; background-color: #0b0b1e; position: relative; }
@@ -41,7 +42,7 @@
         .input-area { background-color: #0f0f2d; border-top: 1px solid #3b0764; padding: 15px; position: absolute; bottom: 0; left: 0; right: 0; }
         .input-group { max-w: 768px; margin: 0 auto; display: flex; gap: 10px; }
         .input-box { flex: 1; border: 1px solid #4c1d95; border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #161638; color: white; }
-        .input-box:focus { border-color: #a855f7; outline: none; }
+        .input-box:focus { border-color: #a855f7; outline: none; box-shadow: 0 0 8px rgba(168,85,247,0.4); }
         .galaxy-btn { background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); color: white; font-weight: bold; border: none; padding: 0px 25px; border-radius: 8px; cursor: pointer; font-size: 14px; }
         .sm-btn { background-color: #3b0764; color: #f3e8ff; border: 1px solid #5b21b6; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
     </style>
@@ -63,7 +64,7 @@
         <div class="sidebar">
             <button class="new-chat-btn" onclick="createNewChat()">＋ 新增對話視窗</button>
             
-            <!-- 💡 核心新增：切換大腦選單 -->
+            <!-- 💡 核心新增：畫面上的大腦選擇下拉選單 -->
             <div class="mt-2 mb-1"><small style="color: #a855f7; font-weight: bold;">設定當前視窗大腦：</small></div>
             <select id="global-model-selector" onchange="updateCurrentChatModel(this.value)" class="model-dropdown mb-3">
                 <option value="llama3">💬 Llama 3 (Meta 全能對話)</option>
@@ -76,19 +77,19 @@
             <div class="chat-list" id="chat-list-container"></div>
         </div>
         
-        <!-- 右側主對話區 -->
+        <!-- 右側主對話區與底部輸入框 -->
         <div class="content-area">
             <div class="chat-container" id="chat-box"></div>
             <div class="input-area">
                 <div class="input-group">
-                    <input type="text" id="user-input" class="form-control input-box" placeholder="請輸入訊息或要生成的圖片畫面描述..." onkeypress="handleKeyPress(event)">
+                    <input type="text" id="user-input" class="form-control input-box" placeholder="請輸入訊息或要生成的圖片描述..." onkeypress="handleKeyPress(event)">
                     <button class="btn galaxy-btn" onclick="sendMessage()">傳送</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 💡 核心引入：將 WebLLM 的引擎用外接控制方式掛載 (WebLLM專用) -->
+    <!-- 核心引入：加載本機 GPU 加速器 (WebLLM專用) -->
     <script type="module">
         import * as webllm from "https://esm.run";
         window.webllm = webllm;
