@@ -1,105 +1,190 @@
+html
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>銀河管理系統</title>
-    <!-- 使用完全不被擋、最輕量的微軟官方樣式庫 (確保100%跳出漂亮排版) -->
+    <title>Galaxy Management System</title>
     <link rel="stylesheet" href="https://aspnetcdn.com">
     <style>
-        /* 🌌 全站璀璨銀河星空夜色背景 */
-        body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
-        
-        /* 頂部導覽列：璀璨深邃銀河漸層 */
-        .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #4c1d95; }
-        
-        .main-container { max-w: 768px; margin: 40px auto; padding: 20px; box-sizing: border-box; }
-        .welcome-card { background-color: #1e1b3a; color: #f3e8ff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #3b0764; border-left: 4px solid #a855f7; }
-        
-        /* 🔒 內嵌式銀河登入介面樣式 */
+        body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; height: 65px; box-sizing: border-box; }
+        .main-layout { display: flex; height: calc(100vh - 65px); width: 100vw; }
+        .sidebar { width: 260px; background-color: #0c0c24; border-right: 1px solid #2e1065; padding: 15px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; }
+        .new-chat-btn { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: white; font-weight: bold; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; text-align: center; }
+        .chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .chat-item { padding: 12px; border-radius: 8px; background-color: #161638; cursor: pointer; border: 1px solid #2e1065; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-item.active { background-color: #2b145c; border-color: #a855f7; }
+        .delete-chat-btn { background: none; border: none; color: #f87171; font-weight: bold; cursor: pointer; }
+        .content-area { flex: 1; display: flex; flex-direction: column; background-color: #0b0b1e; position: relative; }
+        .chat-container { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; box-sizing: border-box; }
+        .bubble-row { display: flex; width: 100%; margin-bottom: 15px; }
+        .justify-end { justify-content: flex-end; }
+        .bubble { padding: 12px 16px; max-width: 80%; font-size: 14px; line-height: 1.5; border-radius: 16px; }
+        .user-bubble { background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%); color: white; border-radius: 16px 16px 0px 16px; }
+        .ai-bubble { background-color: #1e1b3a; color: #f3e8ff; border-radius: 16px 16px 16px 0px; border-left: 4px solid #a855f7; }
+        .ai-img { max-width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #4c1d95; }
+        .input-area { background-color: #0f0f2d; border-top: 1px solid #3b0764; padding: 15px; position: absolute; bottom: 0; left: 0; right: 0; }
+        .input-group { max-w: 768px; margin: 0 auto; display: flex; gap: 10px; }
+        .input-box { flex: 1; border: 1px solid #4c1d95; border-radius: 8px; padding: 10px 15px; background-color: #161638; color: white; }
+        .galaxy-btn { background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); color: white; font-weight: bold; border: none; padding: 0px 25px; border-radius: 8px; cursor: pointer; }
         #login-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a0b36 0%, #050515 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-        .login-card { background: #11112a; padding: 40px 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; border-top: 6px solid #a855f7; box-shadow: 0 25px 60px rgba(0,0,0,0.8); color: #f3e8ff; border: 1px solid #2e1065; }
-        .login-input { width: 100%; border: 2px solid #4c1d95; border-radius: 10px; padding: 12px 15px; font-size: 15px; margin-bottom: 15px; text-align: center; transition: 0.2s; background-color: #1c1c44; color: white; }
-        .login-input:focus { border-color: #a855f7; outline: none; box-shadow: 0 0 10px rgba(168,85,247,0.3); }
-        
-        /* 質感漸層登入按鈕 */
-        .galaxy-btn { width: 100%; background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); color: white; font-weight: bold; border: none; padding: 12px 0; border-radius: 8px; box-shadow: 0 4px 10px rgba(109,40,217,0.3); cursor: pointer; transition: 0.2s; margin-top: 10px; font-size: 15px; letter-spacing: 2px; }
-        .galaxy-btn:hover { background: linear-gradient(135deg, #7e22ce 0%, #5b21b6 100%); text-decoration: none; color: white; }
-        .sm-btn { background-color: #3b0764; color: #f3e8ff; border: 1px solid #5b21b6; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
-        .sm-btn:hover { background-color: #4c1d95; }
+        .login-card { background: #11112a; padding: 40px 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; border-top: 6px solid #a855f7; color: #f3e8ff; }
+        .login-input { width: 100%; border: 2px solid #4c1d95; border-radius: 10px; padding: 12px 15px; text-align: center; background-color: #1c1c44; color: white; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- 🔒 1. 內嵌式銀河管理員驗證遮罩 -->
+    <!-- 🔒 1. Login Mask -->
     <div id="login-overlay">
         <div class="login-card">
-            <div style="font-size: 55px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(168,85,247,0.5));">🔮</div>
-            <h2 class="font-weight-bold mb-2" style="color: #c084fc; letter-spacing: 1px;">銀河系統安全驗證</h2>
-            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 20px; line-height: 1.4;">歡迎造訪，此為管理員專屬星際節點。<br>請輸入您的管理員帳號與存取密碼。</p>
-            
-            <!-- 帳號輸入欄 -->
-            <input type="text" id="admin-username" class="login-input" placeholder="請輸入管理員帳號...">
-            <!-- 密碼輸入欄 -->
-            <input type="password" id="admin-password" class="login-input" placeholder="請輸入安全存取密碼..." onkeypress="handleLoginKeyPress(event)">
-            
-            <!-- 登入按鈕 -->
-            <button onclick="verifyAdminAccount()" class="galaxy-btn">
-                驗證並解鎖核心
-            </button>
-            <p id="login-error" class="text-danger small mt-3" style="display: none; font-weight: 600; color: #f87171 !important;"></p>
+            <div style="font-size: 55px; margin-bottom: 15px;">🔮</div>
+            <h2 class="font-weight-bold mb-2">Security Verification</h2>
+            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 20px;">Admin panel. Please enter credentials.</p>
+            <input type="text" id="admin-username" class="login-input" placeholder="Username: ADMIN">
+            <input type="password" id="admin-password" class="login-input" placeholder="Password: admin123" onkeypress="if(event.key==='Enter') verifyAdmin()">
+            <button onclick="verifyAdmin()" class="galaxy-btn" style="width: 100%; padding: 12px 0;">Verify & Unlock</button>
+            <p id="login-error" class="text-danger small mt-3" style="display: none; font-weight: bold;"></p>
         </div>
     </div>
 
-    <!-- 2. 主頁面頂部 -->
+    <!-- 2. Header -->
     <div class="galaxy-header">
         <div>
-            <h1 style="margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 1px;">🌌 銀河管理系統</h1>
-            <small id="user-info" style="color: #c084fc;">安全上鎖中</small>
+            <h1 style="margin:0; font-size:18px; font-weight:bold;">🌌 Galaxy System</h1>
+            <small id="user-info" style="color: #c084fc;">Locked</small>
         </div>
-        <button onclick="logout()" class="btn btn-sm btn-dark" style="background-color: #3b0764; border: 1px solid #5b21b6;">登出系統</button>
+        <button onclick="location.reload()" class="btn btn-sm btn-dark" style="background-color: #3b0764;">Lock</button>
     </div>
 
-    <!-- 3. 主頁面展示空間 (已完全精簡移除任何對話框與AI) -->
-    <div class="main-container">
-        <div class="welcome-card">
-            🌌 <b>管理員身分認證成功！</b><br><br>
-            歡迎回到您的專屬主網頁。目前所有多餘的附屬功能、聊天側邊欄與對話框已全部安全移除，此處已精簡為最純淨的展示主頁面。
+    <!-- 3. Layout -->
+    <div class="main-layout">
+        <div class="sidebar">
+            <button class="new-chat-btn" onclick="createNewChat()">+ New Chat</button>
+            <div class="chat-list" id="chat-list-container"></div>
+        </div>
+        <div class="content-area">
+            <div class="chat-container" id="chat-box"></div>
+            <div class="input-area">
+                <div class="input-group">
+                    <input type="text" id="user-input" class="input-box" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="galaxy-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // 固定帳號密碼
-        const TARGET_USERNAME = "ADMIN";
-        const TARGET_PASSWORD = "admin123";
+        let chatSessions = {}, currentChatId = "";
 
-        function handleLoginKeyPress(e) {
-            if (e.key === 'Enter') { verifyAdminAccount(); }
-        }
-
-        // 本地帳密核對邏輯
-        function verifyAdminAccount() {
-            const userField = document.getElementById("admin-username").value.trim();
-            const passField = document.getElementById("admin-password").value.trim();
-            const errorLabel = document.getElementById("login-error");
-
-            if (userField === TARGET_USERNAME && passField === TARGET_PASSWORD) {
-                // 帳密正確，解鎖核心
+        function verifyAdmin() {
+            if (document.getElementById("admin-username").value.trim() === "ADMIN" && document.getElementById("admin-password").value.trim() === "admin123") {
                 document.getElementById("login-overlay").style.display = "none";
-                document.getElementById("user-info").innerText = "● 管理員已登入: " + TARGET_USERNAME;
-                errorLabel.style.display = "none";
+                document.getElementById("user-info").innerText = "● Admin Connected";
+                initSystem();
             } else {
-                // 輸入錯誤
-                errorLabel.innerText = "❌ 驗證失敗：帳號或密碼輸入錯誤，星際通聯拒絕！";
-                errorLabel.style.display = "block";
+                document.getElementById("login-error").innerText = "❌ Invalid Credentials!";
+                document.getElementById("login-error").style.display = "block";
             }
         }
 
-        // 登出系統
-        function logout() {
-            location.reload(); // 重新整理網頁即自動安全登出並重新上鎖
+        function initSystem() {
+            const saved = localStorage.getItem("galaxy_records");
+            if (saved) {
+                chatSessions = JSON.parse(saved);
+                currentChatId = localStorage.getItem("galaxy_active_id") || Object.keys(chatSessions);
+            }
+            if (Object.keys(chatSessions).length === 0 || !chatSessions[currentChatId]) {
+                currentChatId = "chat_" + Date.now();
+                chatSessions[currentChatId] = { title: "💬 Chat 1", html: `<div class="bubble-row"><div class="bubble ai-bubble">🌌 <b>System Ready!</b><br>Type messages to chat. Include keywords like 'draw' or 'image' to trigger the AI generator tool automatically.</div></div>` };
+            }
+            renderSidebar();
+            switchChat(currentChatId);
         }
-    </script>
-</body>
-</html>
+
+        function renderSidebar() {
+            const container = document.getElementById("chat-list-container");
+            container.innerHTML = "";
+            Object.keys(chatSessions).forEach(id => {
+                const item = document.createElement("div");
+                item.className = `chat-item ${id === currentChatId ? 'active' : ''}`;
+                item.setAttribute("onclick", `switchChat('${id}')`);
+                item.innerHTML = `<span>${chatSessions[id].title}</span><button class="delete-chat-btn" onclick="deleteChat(event, '${id}')">✕</button>`;
+                container.appendChild(item);
+            });
+        }
+
+        function createNewChat() {
+            const id = "chat_" + Date.now();
+            chatSessions[id] = { title: `💬 Chat ${Object.keys(chatSessions).length + 1}`, html: `<div class="bubble-row"><div class="bubble ai-bubble">🌌 New workspace connected.</div></div>` };
+            currentChatId = id;
+            saveData();
+            switchChat(id);
+        }
+
+        function switchChat(id) {
+            if (!chatSessions[id]) return;
+            currentChatId = id;
+            localStorage.setItem("galaxy_active_id", id);
+            document.getElementById("chat-box").innerHTML = chatSessions[id].html;
+            renderSidebar();
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+        }
+
+        function deleteChat(e, id) {
+            e.stopPropagation();
+            if (Object.keys(chatSessions).length <= 1) return alert("⚠️ Keep at least one space active.");
+            if (confirm("Delete this workspace?")) {
+                delete chatSessions[id];
+                if (currentChatId === id) currentChatId = Object.keys(chatSessions);
+                saveData();
+                switchChat(currentChatId);
+            }
+        }
+
+        function saveData() { localStorage.setItem("galaxy_records", JSON.stringify(chatSessions)); }
+
+        function appendMessage(text, sender) {
+            const chatBox = document.getElementById("chat-box");
+            const row = document.createElement("div");
+            row.className = sender === 'user' ? "bubble-row justify-end" : "bubble-row";
+            const bubble = document.createElement("div");
+            bubble.className = sender === 'user' ? "bubble user-bubble" : "bubble ai-bubble";
+            bubble.innerHTML = text;
+            row.appendChild(bubble);
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            chatSessions[currentChatId].html = chatBox.innerHTML;
+            saveData();
+            return bubble;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+const text = input.value.trim();
+if (!text) return;
+appendMessage(text, 'user');
+input.value = "";
+const lowText = text.toLowerCase();
+if (lowText.includes("draw") || lowText.includes("image") || lowText.includes("picture")) {
+const aiBubble = appendMessage("Generating image...", 'ai');
+setTimeout(() => {
+aiBubble.innerHTML = 🌌 <b>AI Artwork Ready:</b><br><img src="https://picsum.photos{Date.now()}" class="ai-img" onload="document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;">;
+chatSessions[currentChatId].html = document.getElementById("chat-box").innerHTML;
+saveData();
+}, 300);
+} else {
+const aiBubble = appendMessage("Thinking...", 'ai');
+setTimeout(() => {
+let reply = "🔮 System Response:
+";
+if (lowText.includes("hello") || lowText.includes("hi")) reply += "Hello Admin! System is fully operational and secure. How can I help you today? ✨";
+else if (lowText.includes("feature")) reply += "Current specs: Unlimited workspaces, isolated state data management, fast local responses, and integrated image triggers.";
+else reply += Message received successfully: "${text}". Log file has been securely updated in local storage.;
+aiBubble.innerHTML = reply;
+chatSessions[currentChatId].html = document.getElementById("chat-box").innerHTML;
+saveData();
+}, 500);
+}
+}
 
