@@ -1,1 +1,19 @@
-ㄎ
+// === 🎨 融合：換顏色模組的控制核心 ===
+function changeTheme(themeName) {
+    // 先清除所有主題標籤
+    document.body.classList.remove('theme-blue', 'theme-green', 'theme-pink');
+    
+    // 根據選單加上對應顏色
+    if (themeName !== 'purple') {
+        document.body.classList.add('theme-' + themeName);
+    }
+    
+    // 貼心記住使用者的選擇
+    localStorage.setItem("星紫系統_網頁主題", themeName);
+}
+
+// 💡 注意提示：請將下方這三行程式碼，塞入原本 loadChatHistory() 函式的大括號 `{}` 裡面最下面：
+const savedTheme = localStorage.getItem("星紫系統_網頁主題") || "purple";
+document.getElementById("theme-changer").value = savedTheme;
+changeTheme(savedTheme);
+
