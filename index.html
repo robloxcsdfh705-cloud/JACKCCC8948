@@ -4,102 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>銀河 AI 智慧助理</title>
-    <!-- 使用完全不被擋、最輕量的微軟官方樣式庫 (確保 100% 跳出漂亮排版) -->
+    <!-- 使用完全不被擋、最輕量的微軟官方樣式庫 (確保100%跳出漂亮排版) -->
     <link rel="stylesheet" href="https://aspnetcdn.com">
     <style>
         /* 🌌 全站璀璨銀河星空夜色背景 */
-        body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; overflow: hidden; }
         
         /* 頂部導覽列：璀璨深邃銀河漸層 */
-        .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #4c1d95; }
+        .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; height: 65px; box-sizing: border-box; }
         
-        .chat-container { max-w: 768px; margin: 20px auto; padding: 15px; height: calc(100vh - 180px); overflow-y: auto; padding-bottom: 80px; box-sizing: border-box; }
-        .bubble { padding: 12px 16px; margin-bottom: 15px; max-width: 80%; font-size: 14px; line-height: 1.5; }
-        .ai-bubble { background-color: #1e1b3a; color: #f3e8ff; border-left: 4px solid #a855f7; border-radius: 16px 16px 16px 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #3b0764; border-left-width: 4px; }
+        /* 多聊天室佈局：左側邊欄 + 右側主對話區 */
+        .main-layout { display: flex; height: calc(100vh - 65px); width: 100vw; }
         
-        /* 🔒 內嵌式銀河登入介面樣式 */
-        #login-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a0b36 0%, #050515 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-        .login-card { background: #11112a; padding: 40px 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; border-top: 6px solid #a855f7; box-shadow: 0 25px 60px rgba(0,0,0,0.8); color: #f3e8ff; border: 1px solid #2e1065; }
-        .login-input { width: 100%; border: 2px solid #4c1d95; border-radius: 10px; padding: 12px 15px; font-size: 15px; margin-bottom: 15px; text-align: center; transition: 0.2s; background-color: #1c1c44; color: white; }
-        .login-input:focus { border-color: #a855f7; outline: none; box-shadow: 0 0 10px rgba(168,85,247,0.3); }
+        /* 左側聊天室管理欄 */
+        .sidebar { width: 260px; background-color: #0c0c24; border-right: 1px solid #2e1065; padding: 15px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; }
+        .new-chat-btn { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: white; font-weight: bold; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; text-align: center; box-shadow: 0 4px 10px rgba(168,85,247,0.3); transition: 0.2s; outline: none; }
+        .new-chat-btn:hover { background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%); transform: scale(1.02); }
+        .chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .chat-item { padding: 10px 12px; border-radius: 8px; background-color: #161638; cursor: pointer; border: 1px solid #2e1065; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .chat-item:hover, .chat-item.active { background-color: #2b145c; border-color: #a855f7; }
+        .delete-chat-btn { background: none; border: none; color: #f87171; font-weight: bold; cursor: pointer; padding: 0 5px; font-size: 12px; line-height: 1; }
+        .delete-chat-btn:hover { color: #ef4444; transform: scale(1.2); }
+
+        /* 右側主對話區 */
+        .content-area { flex: 1; display: flex; flex-direction: column; background-color: #0b0b1e; position: relative; }
+        .chat-container { flex: 1; padding: 20px; overflow-y: auto; box-sizing: border-box; }
+        .bubble-row { display: flex; width: 100%; margin-bottom: 15px; }
+        .bubble { padding: 12px 16px; max-width: 80%; font-size: 14px; line-height: 1.5; }
+        .ai-bubble { background-color: #1e1b3a; color: #f3e8ff; border-radius: 16px 16px 16px 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #3b0764; border-left: 4px solid #a855f7; }
         
-        /* 質感漸層登入按鈕 */
-        .galaxy-btn { width: 100%; background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); color: white; font-weight: bold; border: none; padding: 12px 0; border-radius: 8px; box-shadow: 0 4px 10px rgba(109,40,217,0.3); cursor: pointer; transition: 0.2s; margin-top: 10px; font-size: 15px; letter-spacing: 2px; }
-        .galaxy-btn:hover { background: linear-gradient(135deg, #7e22ce 0%, #5b21b6 100%); text-decoration: none; color: white; }
+        .sm-btn { background-color: #3b0764; color: #f3e8ff; border: 1px solid #5b21b6; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
+        .sm-btn:hover { background-color: #4c1d95; }
     </style>
 </head>
 <body>
 
-    <!-- 🔒 1. 內嵌式銀河管理員驗證遮罩 -->
-    <div id="login-overlay">
-        <div class="login-card">
-            <div style="font-size: 55px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(168,85,247,0.5));">🔮</div>
-            <h2 class="font-weight-bold mb-2" style="color: #c084fc; letter-spacing: 1px;">銀河系統安全驗證</h2>
-            <p style="color: #9ca3af; font-size: 13px; margin-bottom: 20px; line-height: 1.4;">歡迎造訪，此為管理員專屬星際節點。<br>請輸入您的管理員帳號與存取密碼。</p>
-            
-            <!-- 帳號輸入欄 -->
-            <input type="text" id="admin-username" class="login-input" placeholder="請輸入管理員帳號...">
-            <!-- 密碼輸入欄 -->
-            <input type="password" id="admin-password" class="login-input" placeholder="請輸入安全存取密碼..." onkeypress="handleLoginKeyPress(event)">
-            
-            <!-- 登入按鈕 -->
-            <button onclick="verifyAdminAccount()" class="galaxy-btn">
-                驗證並解鎖核心
-            </button>
-            <p id="login-error" class="text-danger small mt-3" style="display: none; font-weight: 600; color: #f87171 !important;"></p>
-        </div>
-    </div>
-
-    <!-- 2. 主頁面頂部 -->
+    <!-- 頂部導覽列 -->
     <div class="galaxy-header">
         <div>
             <h1 style="margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 1px;">🌌 銀河 AI 智慧助理</h1>
-            <small id="user-info" style="color: #c084fc;">安全上鎖中</small>
+            <small style="color: #c084fc;">● 多聊天室獨立測試版</small>
         </div>
-        <button onclick="logout()" class="btn btn-sm btn-dark" style="background-color: #3b0764; border: 1px solid #5b21b6;">登出系統</button>
+        <button onclick="clearAllData()" class="sm-btn" style="background-color: #dc2626; border-color: #ef4444;">重設全站</button>
     </div>
 
-    <!-- 聊天對話區 (已完全精簡，無對話框) -->
-    <div class="chat-container" id="chat-box">
-        <div class="d-flex">
-            <div class="bubble ai-bubble">
-                🌌 <b>管理員身分認證成功！</b><br>
-                歡迎來到 <b>銀河 AI 智慧助理</b> 系統主頁面。<br>
-                目前所有附屬功能與聊天對話框已依指示精簡移除，此處為您的專屬星際展示主頁。
-            </div>
+    <!-- 多聊天室主佈局區 -->
+    <div class="main-layout">
+        <!-- 左側：對話管理側邊欄 -->
+        <div class="sidebar">
+            <!-- 💡 這顆就是你要的「新增聊天室」主按鈕，一打開就能直接狂點 -->
+            <button class="new-chat-btn" onclick="createNewChat()">＋ 新增聊天室</button>
+            <div class="chat-list" id="chat-list-container"></div>
+        </div>
+        
+        <!-- 右側：主畫面對話展示區 -->
+        <div class="content-area">
+            <div class="chat-container" id="chat-box"></div>
         </div>
     </div>
 
+    <!-- 核心控制腳本 (完全整合在一個檔案內，絕不缺件報錯) -->
     <script>
-        // 固定帳號密碼配方
-        const TARGET_USERNAME = "ADMIN";
-        const TARGET_PASSWORD = "admin123";
+        let chatSessions = {}; 
+        let currentChatId = "";
 
-        function handleLoginKeyPress(e) {
-            if (e.key === 'Enter') { verifyAdminAccount(); }
+        // 網頁載入時自動初始化
+        window.addEventListener("DOMContentLoaded", () => {
+            initMultiChatSystem();
+        });
+
+        // 多聊天室載入核心
+        function initMultiChatSystem() {
+            const savedSessions = localStorage.getItem("銀河純淨版_多對話紀錄");
+            if (savedSessions) {
+                chatSessions = JSON.parse(savedSessions);
+                currentChatId = localStorage.getItem("銀河純淨版_當前對話ID") || Object.keys(chatSessions)[0];
+            }
+            
+            // 如果完全沒紀錄，自動生成第一個
+            if (Object.keys(chatSessions).length === 0 || !chatSessions[currentChatId]) {
+                const defaultId = "chat_" + Date.now();
+                chatSessions[defaultId] = {
+                    title: "💬 新對話視窗 1",
+                    htmlContent: `<div class="bubble-row"><div class="bubble ai-bubble">🌌 <b>對話視窗 1 建立成功！</b><br>這是一個完全獨立的展示空間。<br><br>請直接點擊左側上方的<b>【＋ 新增聊天室】</b>按鈕，就能立刻長出新的對話視窗喔！</div></div>`
+                };
+                currentChatId = defaultId;
+            }
+            
+            renderSidebar();
+            switchChat(currentChatId);
         }
 
-        // 本地帳密核對邏輯
-        function verifyAdminAccount() {
-            const userField = document.getElementById("admin-username").value.trim();
-            const passField = document.getElementById("admin-password").value.trim();
-            const errorLabel = document.getElementById("login-error");
+        // 刷新左側列表
+        function renderSidebar() {
+            const container = document.getElementById("chat-list-container");
+            if (!container) return;
+            container.innerHTML = "";
 
-            if (userField === TARGET_USERNAME && passField === TARGET_PASSWORD) {
-                // 帳密皆正確，放行解鎖
-                document.getElementById("login-overlay").style.display = "none";
-                document.getElementById("user-info").innerText = "● 管理員已登入: " + TARGET_USERNAME;
-                errorLabel.style.display = "none";
-            } else {
-                // 輸入錯誤
-                errorLabel.innerText = "❌ 驗證失敗：帳號或密碼輸入錯誤，星際通聯拒絕！";
-                errorLabel.style.display = "block";
+            Object.keys(chatSessions).forEach(id => {
+                const item = document.createElement("div");
+                item.className = `chat-item ${id === currentChatId ? 'active' : ''}`;
+                item.setAttribute("onclick", `switchChat('${id}')`);
+                item.innerHTML = `
+                    <span>${chatSessions[id].title}</span>
+                    <button class="delete-chat-btn" onclick="deleteChat(event, '${id}')">✕</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // 💡 點擊長出新聊天室
+        function createNewChat() {
+            const newId = "chat_" + Date.now();
+            const count = Object.keys(chatSessions).length + 1;
+            
+            chatSessions[newId] = {
+                title: `💬 新對話視窗 ${count}`,
+                htmlContent: `<div class="bubble-row"><div class="bubble ai-bubble">🌌 <b>對話視窗 ${count} 建立成功！</b><br>這是一個全新的分流環境。你可以在左邊隨意切換不同的視窗，點擊小叉✕按鈕即可隨時將它移除。</div></div>`
+            };
+            currentChatId = newId;
+            saveData();
+            renderSidebar();
+            switchChat(newId);
+        }
+
+        // 切換聊天室
+        function switchChat(id) {
+            if (!chatSessions[id]) return;
+            currentChatId = id;
+            localStorage.setItem("銀河純淨版_當前對話ID", id);
+            document.getElementById("chat-box").innerHTML = chatSessions[id].htmlContent;
+            
+            // 重新刷新列表高亮狀態
+            const items = document.getElementsByClassName("chat-item");
+            for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove("active");
+            }
+            renderSidebar();
+            
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+        }
+
+        // 刪除聊天室
+        function deleteChat(event, id) {
+            event.stopPropagation(); // 防止點擊叉叉時誤觸切換
+            if (Object.keys(chatSessions).length <= 1) {
+                alert("⚠️ 請至少保留一個聊天視窗！");
+                return;
+            }
+            if (confirm("確定要永遠刪除這個對話視窗嗎？")) {
+                delete chatSessions[id];
+                if (currentChatId === id) {
+                    currentChatId = Object.keys(chatSessions)[0];
+                }
+                saveData();
+                renderSidebar();
+                switchChat(currentChatId);
             }
         }
 
-        // 登出系統
-        function logout() {
-            location.reload(); // 重新整理網頁即自動登出並重新上鎖
+        function saveData() {
+            localStorage.setItem("銀河純淨版_多對話紀錄", JSON.stringify(chatSessions));
+        }
+
+        // 全站重設
+        function clearAllData() {
+            if (confirm("確定要重設全站，清除所有快取紀錄嗎？")) {
+                localStorage.clear();
+                chatSessions = {};
+                initMultiChatSystem();
+            }
         }
     </script>
 </body>
