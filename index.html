@@ -9,32 +9,41 @@
     <style>
         /* 🌌 全站璀璨銀河星空夜色背景 */
         body { background-color: #0b0b1e; color: #f3e8ff; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; overflow: hidden; }
-        
-        /* 頂部導覽列：璀璨深邃銀河漸層 */
         .galaxy-header { background: linear-gradient(90deg, #1e1b4b 0%, #311042 50%, #1e1b4b 100%); color: white; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; height: 65px; box-sizing: border-box; }
-        
-        /* 多聊天室佈局：左側邊欄 + 右側主對話區 */
         .main-layout { display: flex; height: calc(100vh - 65px); width: 100vw; }
         
-        /* 左側聊天室管理欄 */
-        .sidebar { width: 260px; background-color: #0c0c24; border-right: 1px solid #2e1065; padding: 15px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; }
-        .new-chat-btn { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: white; font-weight: bold; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; text-align: center; box-shadow: 0 4px 10px rgba(168,85,247,0.3); transition: 0.2s; outline: none; }
-        .new-chat-btn:hover { background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%); transform: scale(1.02); }
+        /* 左側側邊欄配置 */
+        .sidebar { width: 280px; background-color: #0c0c24; border-right: 1px solid #2e1065; padding: 15px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; }
+        .new-chat-btn { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: white; font-weight: bold; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 14px; text-align: center; box-shadow: 0 4px 10px rgba(168,85,247,0.3); }
+        .new-chat-btn:hover { background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%); }
         .chat-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .chat-item { padding: 10px 12px; border-radius: 8px; background-color: #161638; cursor: pointer; border: 1px solid #2e1065; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .chat-item { padding: 10px 12px; border-radius: 8px; background-color: #161638; cursor: pointer; border: 1px solid #2e1065; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
         .chat-item:hover, .chat-item.active { background-color: #2b145c; border-color: #a855f7; }
-        .delete-chat-btn { background: none; border: none; color: #f87171; font-weight: bold; cursor: pointer; padding: 0 5px; font-size: 12px; line-height: 1; }
-        .delete-chat-btn:hover { color: #ef4444; transform: scale(1.2); }
-
-        /* 右側主對話區 */
-        .content-area { flex: 1; display: flex; flex-direction: column; background-color: #0b0b1e; position: relative; }
-        .chat-container { flex: 1; padding: 20px; overflow-y: auto; box-sizing: border-box; }
-        .bubble-row { display: flex; width: 100%; margin-bottom: 15px; }
-        .bubble { padding: 12px 16px; max-width: 80%; font-size: 14px; line-height: 1.5; }
-        .ai-bubble { background-color: #1e1b3a; color: #f3e8ff; border-radius: 16px 16px 16px 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #3b0764; border-left: 4px solid #a855f7; }
+        .chat-item-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .chat-title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .delete-chat-btn { background: none; border: none; color: #f87171; font-weight: bold; cursor: pointer; padding: 0 5px; font-size: 12px; }
+        .delete-chat-btn:hover { color: #ef4444; }
         
+        /* 💡 核心新增：各別聊天室的大腦選擇下拉選單 */
+        .model-badge { font-size: 11px; color: #c084fc; background-color: #1e1b4b; padding: 2px 6px; border-radius: 4px; border: 1px solid #4c1d95; width: fit-content; margin-top: 2px; }
+        .model-dropdown { width: 100%; font-size: 12px; background-color: #161638; color: #f3e8ff; border: 1px solid #4c1d95; border-radius: 6px; padding: 5px; outline: none; }
+
+        /* 右側對話顯示與輸入區配置 */
+        .content-area { flex: 1; display: flex; flex-direction: column; background-color: #0b0b1e; position: relative; }
+        .chat-container { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; box-sizing: border-box; }
+        .bubble-row { display: flex; width: 100%; margin-bottom: 15px; }
+        .justify-end { justify-content: flex-end; }
+        .bubble { padding: 12px 16px; max-width: 80%; font-size: 14px; line-height: 1.5; border-radius: 16px; }
+        .user-bubble { background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%); color: white; border-radius: 16px 16px 0px 16px; box-shadow: 0 4px 10px rgba(99,102,241,0.3); }
+        .ai-bubble { background-color: #1e1b3a; color: #f3e8ff; border-radius: 16px 16px 16px 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid #3b0764; border-left: 4px solid #a855f7; }
+        .ai-img { max-width: 100%; border-radius: 10px; margin-top: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.5); border: 1px solid #4c1d95; }
+        
+        .input-area { background-color: #0f0f2d; border-top: 1px solid #3b0764; padding: 15px; position: absolute; bottom: 0; left: 0; right: 0; }
+        .input-group { max-w: 768px; margin: 0 auto; display: flex; gap: 10px; }
+        .input-box { flex: 1; border: 1px solid #4c1d95; border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #161638; color: white; }
+        .input-box:focus { border-color: #a855f7; outline: none; }
+        .galaxy-btn { background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%); color: white; font-weight: bold; border: none; padding: 0px 25px; border-radius: 8px; cursor: pointer; font-size: 14px; }
         .sm-btn { background-color: #3b0764; color: #f3e8ff; border: 1px solid #5b21b6; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
-        .sm-btn:hover { background-color: #4c1d95; }
     </style>
 </head>
 <body>
@@ -43,138 +52,48 @@
     <div class="galaxy-header">
         <div>
             <h1 style="margin: 0; font-size: 18px; font-weight: bold; letter-spacing: 1px;">🌌 銀河 AI 智慧助理</h1>
-            <small style="color: #c084fc;">● 多聊天室獨立測試版</small>
+            <small id="status-text" style="color: #c084fc;">● 多核心運算引擎就緒</small>
         </div>
         <button onclick="clearAllData()" class="sm-btn" style="background-color: #dc2626; border-color: #ef4444;">重設全站</button>
     </div>
 
-    <!-- 多聊天室主佈局區 -->
+    <!-- 主空間分流佈局區 -->
     <div class="main-layout">
-        <!-- 左側：對話管理側邊欄 -->
+        <!-- 左側側邊欄 -->
         <div class="sidebar">
-            <!-- 💡 這顆就是你要的「新增聊天室」主按鈕，一打開就能直接狂點 -->
-            <button class="new-chat-btn" onclick="createNewChat()">＋ 新增聊天室</button>
+            <button class="new-chat-btn" onclick="createNewChat()">＋ 新增對話視窗</button>
+            
+            <!-- 💡 核心新增：切換大腦選單 -->
+            <div class="mt-2 mb-1"><small style="color: #a855f7; font-weight: bold;">設定當前視窗大腦：</small></div>
+            <select id="global-model-selector" onchange="updateCurrentChatModel(this.value)" class="model-dropdown mb-3">
+                <option value="llama3">💬 Llama 3 (Meta 全能對話)</option>
+                <option value="gemma2">✍️ Gemma 2 (Google 創意寫作)</option>
+                <option value="webllm">💻 Gemma 2 WebLLM (本機純斷網)</option>
+                <option value="flux">🖼️ Flux.1 (宇宙級高清繪圖)</option>
+                <option value="sdxl">🎨 Stable Diffusion XL (經典藝術繪圖)</option>
+            </select>
+            
             <div class="chat-list" id="chat-list-container"></div>
         </div>
         
-        <!-- 右側：主畫面對話展示區 -->
+        <!-- 右側主對話區 -->
         <div class="content-area">
             <div class="chat-container" id="chat-box"></div>
+            <div class="input-area">
+                <div class="input-group">
+                    <input type="text" id="user-input" class="form-control input-box" placeholder="請輸入訊息或要生成的圖片畫面描述..." onkeypress="handleKeyPress(event)">
+                    <button class="btn galaxy-btn" onclick="sendMessage()">傳送</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 核心控制腳本 (完全整合在一個檔案內，絕不缺件報錯) -->
-    <script>
-        let chatSessions = {}; 
-        let currentChatId = "";
-
-        // 網頁載入時自動初始化
-        window.addEventListener("DOMContentLoaded", () => {
-            initMultiChatSystem();
-        });
-
-        // 多聊天室載入核心
-        function initMultiChatSystem() {
-            const savedSessions = localStorage.getItem("銀河純淨版_多對話紀錄");
-            if (savedSessions) {
-                chatSessions = JSON.parse(savedSessions);
-                currentChatId = localStorage.getItem("銀河純淨版_當前對話ID") || Object.keys(chatSessions)[0];
-            }
-            
-            // 如果完全沒紀錄，自動生成第一個
-            if (Object.keys(chatSessions).length === 0 || !chatSessions[currentChatId]) {
-                const defaultId = "chat_" + Date.now();
-                chatSessions[defaultId] = {
-                    title: "💬 新對話視窗 1",
-                    htmlContent: `<div class="bubble-row"><div class="bubble ai-bubble">🌌 <b>對話視窗 1 建立成功！</b><br>這是一個完全獨立的展示空間。<br><br>請直接點擊左側上方的<b>【＋ 新增聊天室】</b>按鈕，就能立刻長出新的對話視窗喔！</div></div>`
-                };
-                currentChatId = defaultId;
-            }
-            
-            renderSidebar();
-            switchChat(currentChatId);
-        }
-
-        // 刷新左側列表
-        function renderSidebar() {
-            const container = document.getElementById("chat-list-container");
-            if (!container) return;
-            container.innerHTML = "";
-
-            Object.keys(chatSessions).forEach(id => {
-                const item = document.createElement("div");
-                item.className = `chat-item ${id === currentChatId ? 'active' : ''}`;
-                item.setAttribute("onclick", `switchChat('${id}')`);
-                item.innerHTML = `
-                    <span>${chatSessions[id].title}</span>
-                    <button class="delete-chat-btn" onclick="deleteChat(event, '${id}')">✕</button>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        // 💡 點擊長出新聊天室
-        function createNewChat() {
-            const newId = "chat_" + Date.now();
-            const count = Object.keys(chatSessions).length + 1;
-            
-            chatSessions[newId] = {
-                title: `💬 新對話視窗 ${count}`,
-                htmlContent: `<div class="bubble-row"><div class="bubble ai-bubble">🌌 <b>對話視窗 ${count} 建立成功！</b><br>這是一個全新的分流環境。你可以在左邊隨意切換不同的視窗，點擊小叉✕按鈕即可隨時將它移除。</div></div>`
-            };
-            currentChatId = newId;
-            saveData();
-            renderSidebar();
-            switchChat(newId);
-        }
-
-        // 切換聊天室
-        function switchChat(id) {
-            if (!chatSessions[id]) return;
-            currentChatId = id;
-            localStorage.setItem("銀河純淨版_當前對話ID", id);
-            document.getElementById("chat-box").innerHTML = chatSessions[id].htmlContent;
-            
-            // 重新刷新列表高亮狀態
-            const items = document.getElementsByClassName("chat-item");
-            for (let i = 0; i < items.length; i++) {
-                items[i].classList.remove("active");
-            }
-            renderSidebar();
-            
-            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
-        }
-
-        // 刪除聊天室
-        function deleteChat(event, id) {
-            event.stopPropagation(); // 防止點擊叉叉時誤觸切換
-            if (Object.keys(chatSessions).length <= 1) {
-                alert("⚠️ 請至少保留一個聊天視窗！");
-                return;
-            }
-            if (confirm("確定要永遠刪除這個對話視窗嗎？")) {
-                delete chatSessions[id];
-                if (currentChatId === id) {
-                    currentChatId = Object.keys(chatSessions)[0];
-                }
-                saveData();
-                renderSidebar();
-                switchChat(currentChatId);
-            }
-        }
-
-        function saveData() {
-            localStorage.setItem("銀河純淨版_多對話紀錄", JSON.stringify(chatSessions));
-        }
-
-        // 全站重設
-        function clearAllData() {
-            if (confirm("確定要重設全站，清除所有快取紀錄嗎？")) {
-                localStorage.clear();
-                chatSessions = {};
-                initMultiChatSystem();
-            }
-        }
+    <!-- 💡 核心引入：將 WebLLM 的引擎用外接控制方式掛載 (WebLLM專用) -->
+    <script type="module">
+        import * as webllm from "https://esm.run";
+        window.webllm = webllm;
     </script>
+    <!-- 引入獨立的控制大腦 -->
+    <script src="./chat.js"></script>
 </body>
 </html>
